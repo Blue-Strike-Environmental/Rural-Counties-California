@@ -1,22 +1,25 @@
+from pathlib import Path
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Blue Strike Environmental, Dashboards",
+    page_title="Rural Counties GHG Calculator, concept",
     page_icon="🌱",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
-st.title("Blue Strike Environmental")
-st.subheader("Interactive dashboards for our climate and GHG projects")
+st.markdown("""
+<style>
+  #MainMenu {visibility: hidden;}
+  footer {visibility: hidden;}
+  header {visibility: hidden;}
+  .block-container {padding: 0 !important; max-width: 100% !important;}
+  section.main > div {padding: 0 !important;}
+</style>
+""", unsafe_allow_html=True)
 
-st.markdown(
-    "Welcome to the Blue Strike Environmental dashboard portal. "
-    "Select a project from the sidebar to explore its analysis and scenarios."
-)
+html_path = Path(__file__).parent / "ghg_dashboard_concept.html"
+html_content = html_path.read_text()
 
-st.info(
-    "**Rural Counties GHG Calculator** — Del Norte, Amador, and Tuolumne. "
-    "Baseline emissions, material breakdowns, diversion scenarios. Currently in preview (v0.1)."
-)
-
-st.caption("Blue Strike Environmental, 2026")
+components.html(html_content, height=3400, scrolling=True)
