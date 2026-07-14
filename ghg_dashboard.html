@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rural Counties GHG Calculator — Organics Waste Diversion</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --forest:   #1a3a2a;
+  --pine:     #2d5a3d;
+  --sage:     #4a8c5c;
+  --mint:     #7ec8a0;
+  --foam:     #c8ecd8;
+  --cream:    #f5f0e8;
+  --sand:     #e8e0d0;
+  --bark:     #6b4f35;
+  --ember:    #c4622d;
+  --gold:     #d4a843;
+  --sky:      #3a6b8a;
+  --mist:     #e8f0f5;
+  --ink:      #1a1f1c;
+  --smoke:    #5a6b62;
+  --ghost:    #9aaa9e;
+  --white:    #ffffff;
+  --red-warn: #c4622d;
+  --amber-warn: #d4a843;
+  --green-good: #4a8c5c;
+  --rad: 3px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #f0ebe0;
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--forest);
+  color: var(--white);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 58px;
+  border-bottom: 2px solid var(--sage);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.header-logo {
+  width: 32px;
+  height: 32px;
+  background: var(--sage);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  color: var(--white);
+}
+.header-title {
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--white);
+}
+.header-sub {
+  font-size: 11px;
+  color: var(--mint);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 11px;
+  color: var(--ghost);
+}
+.data-badge {
+  background: var(--pine);
+  border: 1px solid var(--sage);
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 10px;
+  color: var(--mint);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ── LAYOUT ── */
+.app {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 58px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--forest);
+  padding: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--pine);
+}
+.sidebar-section {
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.sidebar-section:last-child { border-bottom: none; }
+.section-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mint);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(126,200,160,0.2);
+}
+
+/* County selector */
+.county-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.county-tab {
+  flex: 1;
+  padding: 6px 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--rad);
+  color: var(--ghost);
+  font-size: 10px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.county-tab.active {
+  background: var(--sage);
+  border-color: var(--mint);
+  color: var(--white);
+  font-weight: 600;
+}
+.county-tab:hover:not(.active) {
+  background: rgba(255,255,255,0.1);
+  color: var(--white);
+}
+
+/* Scenario toggles */
+.scenario-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.scenario-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--rad);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.scenario-item:hover { background: rgba(255,255,255,0.08); }
+.scenario-item.active {
+  background: rgba(74,140,92,0.2);
+  border-color: var(--sage);
+}
+.scenario-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.scenario-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.scenario-name {
+  font-size: 11px;
+  color: var(--ghost);
+  font-weight: 400;
+  line-height: 1.3;
+}
+.scenario-item.active .scenario-name { color: var(--white); font-weight: 500; }
+.scenario-toggle {
+  width: 28px; height: 16px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.scenario-toggle::after {
+  content: '';
+  position: absolute;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--ghost);
+  top: 2px; left: 2px;
+  transition: all 0.2s;
+}
+.scenario-item.active .scenario-toggle {
+  background: var(--sage);
+}
+.scenario-item.active .scenario-toggle::after {
+  background: var(--white);
+  left: 14px;
+}
+
+/* Sliders */
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.slider-item { }
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.slider-label {
+  font-size: 10px;
+  color: var(--ghost);
+  letter-spacing: 0.02em;
+}
+.slider-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--mint);
+  font-weight: 500;
+}
+input[type=range] {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--mint);
+  cursor: pointer;
+  border: 2px solid var(--forest);
+  box-shadow: 0 0 0 2px var(--sage);
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* Weight toggles */
+.weight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.weight-btn {
+  padding: 5px 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--rad);
+  color: var(--ghost);
+  font-size: 9px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+.weight-btn.active {
+  background: rgba(74,140,92,0.25);
+  border-color: var(--sage);
+  color: var(--mint);
+  font-weight: 600;
+}
+.weight-btn:hover:not(.active) {
+  background: rgba(255,255,255,0.1);
+  color: var(--white);
+}
+
+/* SB1383 target */
+.target-bar {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--rad);
+  padding: 8px 10px;
+}
+.target-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.target-label { font-size: 10px; color: var(--ghost); }
+.target-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold); }
+.target-progress {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.target-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--ember));
+  transition: width 0.4s ease;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: #f0ebe0;
+}
+
+/* KPI strip */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0;
+  border-bottom: 1px solid var(--sand);
+  background: var(--cream);
+}
+.kpi-card {
+  padding: 16px 18px;
+  border-right: 1px solid var(--sand);
+  position: relative;
+  transition: background 0.15s;
+}
+.kpi-card:last-child { border-right: none; }
+.kpi-card:hover { background: var(--sand); }
+.kpi-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--smoke);
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.kpi-unit {
+  font-size: 9px;
+  color: var(--ghost);
+  letter-spacing: 0.05em;
+}
+.kpi-delta {
+  position: absolute;
+  top: 16px;
+  right: 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+.delta-good { background: #d4edd8; color: #1a5c28; }
+.delta-warn { background: #fde8c8; color: #8b4513; }
+.delta-bad  { background: #f8d4cc; color: #8b1a1a; }
+.delta-neutral { background: var(--sand); color: var(--smoke); }
+
+/* Content area */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+  padding: 16px;
+  flex: 1;
+}
+
+/* Cards */
+.card {
+  background: var(--cream);
+  border: 1px solid var(--sand);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.card-full { grid-column: 1 / -1; }
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--sand);
+  background: white;
+}
+.card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+.card-subtitle {
+  font-size: 10px;
+  color: var(--ghost);
+  margin-top: 1px;
+}
+.card-body {
+  padding: 16px;
+  position: relative;
+}
+.chart-wrap {
+  position: relative;
+  height: 220px;
+}
+.chart-wrap-tall {
+  position: relative;
+  height: 280px;
+}
+
+/* Scenario comparison table */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.compare-table th {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--smoke);
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--sand);
+  background: white;
+}
+.compare-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  vertical-align: middle;
+  color: var(--ink);
+}
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table tr:hover td { background: var(--sand); }
+.compare-table tr.baseline-row td { font-style: italic; color: var(--smoke); }
+
+.bar-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 60px;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.bar-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--ink);
+  min-width: 44px;
+  text-align: right;
+}
+
+/* Prioritization matrix */
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  font-size: 9px;
+}
+.matrix-header {
+  text-align: center;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--smoke);
+  padding: 4px 2px;
+}
+.matrix-row-label {
+  font-size: 10px;
+  color: var(--ink);
+  font-weight: 500;
+  padding: 6px 4px;
+  display: flex;
+  align-items: center;
+}
+.matrix-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.cell-h { background: #c8ecd8; color: #1a5c28; }
+.cell-m { background: #fde8c8; color: #8b4513; }
+.cell-l { background: #f8d4cc; color: #8b1a1a; }
+.matrix-score {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  padding: 6px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Transport card */
+.transport-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.transport-item {
+  background: white;
+  border: 1px solid var(--sand);
+  border-radius: var(--rad);
+  padding: 10px;
+  text-align: center;
+}
+.transport-icon {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+.transport-name {
+  font-size: 9px;
+  color: var(--smoke);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.transport-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.transport-unit { font-size: 9px; color: var(--ghost); }
+.transport-change {
+  font-size: 9px;
+  margin-top: 3px;
+  font-family: 'DM Mono', monospace;
+}
+.pos { color: var(--ember); }
+.neg { color: var(--sage); }
+
+/* SB 1383 compliance */
+.sb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.sb-item {
+  background: white;
+  border: 1px solid var(--sand);
+  border-radius: var(--rad);
+  padding: 12px;
+}
+.sb-req {
+  font-size: 9px;
+  color: var(--smoke);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.sb-status {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.sb-desc { font-size: 10px; color: var(--smoke); }
+.status-met { color: var(--sage); }
+.status-gap { color: var(--ember); }
+.status-partial { color: var(--gold); }
+
+/* Footer note */
+.footnote {
+  grid-column: 1 / -1;
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.03);
+  border: 1px solid var(--sand);
+  border-radius: var(--rad);
+  font-size: 9px;
+  color: var(--ghost);
+  letter-spacing: 0.02em;
+  line-height: 1.7;
+}
+
+/* Tabs in card header */
+.tab-group {
+  display: flex;
+  gap: 3px;
+}
+.tab {
+  padding: 4px 10px;
+  font-size: 10px;
+  background: transparent;
+  border: 1px solid var(--sand);
+  border-radius: 3px;
+  color: var(--smoke);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.tab.active {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: var(--white);
+  font-weight: 500;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--sand);
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--smoke);
+}
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Responsive mini-map placeholder */
+.map-placeholder {
+  background: linear-gradient(135deg, #d4e8c8, #b8d4a8, #9cc090, #7aaa78);
+  border-radius: var(--rad);
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.map-placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M0 0h20v20H0zM20 20h20v20H20z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.map-dots {
+  position: absolute;
+  inset: 0;
+}
+.map-pin {
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.map-pin:hover { transform: scale(1.5); }
+.map-label {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+  background: rgba(26,58,42,0.6);
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+.map-layers {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  border-top: 1px solid var(--sand);
+}
+.map-layer-btn {
+  padding: 3px 8px;
+  font-size: 9px;
+  background: var(--sand);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 10px;
+  color: var(--smoke);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+.map-layer-btn.active {
+  background: var(--forest);
+  color: var(--white);
+  border-color: var(--forest);
+}
+
+/* Scenario description panel */
+.scenario-desc-panel {
+  background: var(--pine);
+  border-radius: var(--rad);
+  padding: 12px;
+  margin-bottom: 12px;
+  color: var(--white);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.scenario-desc-title {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mint);
+  margin-bottom: 5px;
+}
+
+/* Tag */
+.tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-left: 6px;
+}
+.tag-green { background: #c8ecd8; color: #1a5c28; }
+.tag-amber { background: #fde8c8; color: #8b4513; }
+.tag-red   { background: #f8d4cc; color: #8b1a1a; }
+
+/* Stagger animation */
+.card { animation: fadeUp 0.3s ease both; }
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(4) { animation-delay: 0.2s; }
+.card:nth-child(5) { animation-delay: 0.25s; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.kpi-card { animation: fadeUp 0.25s ease both; }
+.kpi-card:nth-child(1) { animation-delay: 0.02s; }
+.kpi-card:nth-child(2) { animation-delay: 0.05s; }
+.kpi-card:nth-child(3) { animation-delay: 0.08s; }
+.kpi-card:nth-child(4) { animation-delay: 0.11s; }
+.kpi-card:nth-child(5) { animation-delay: 0.14s; }
+.kpi-card:nth-child(6) { animation-delay: 0.17s; }
+
+.note-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(212,168,67,0.12);
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 10px;
+  padding: 3px 8px;
+  font-size: 9px;
+  color: var(--gold);
+  font-weight: 500;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logo">R</div>
+    <div>
+      <div class="header-title">Rural Counties GHG Calculator</div>
+      <div class="header-sub">Organics Waste Diversion Planning Tool</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span class="data-badge">Planning-Level Estimates</span>
+    <span>Del Norte · Tuolumne · Amador</span>
+    <span>Blue Strike Environmental · 2026</span>
+  </div>
+</header>
+
+<div class="app">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+
+  <div class="sidebar-section">
+    <div class="section-label">County</div>
+    <div class="county-tabs">
+      <button class="county-tab active" onclick="setCounty('del_norte', this)">Del Norte</button>
+      <button class="county-tab" onclick="setCounty('tuolumne', this)">Tuolumne</button>
+      <button class="county-tab" onclick="setCounty('amador', this)">Amador</button>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="section-label">Diversion Programs</div>
+    <div class="scenario-grid" id="scenario-grid">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="section-label">Key Assumptions</div>
+    <div class="slider-group">
+      <div class="slider-item">
+        <div class="slider-header">
+          <span class="slider-label">Participation rate</span>
+          <span class="slider-val" id="val-participation">55%</span>
+        </div>
+        <input type="range" min="10" max="95" value="55" id="sl-participation"
+               oninput="updateSlider('participation', this.value, '%'); recalc()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-header">
+          <span class="slider-label">Haul distance to facility (mi)</span>
+          <span class="slider-val" id="val-hauldist">45</span>
+        </div>
+        <input type="range" min="5" max="200" value="45" id="sl-hauldist"
+               oninput="updateSlider('hauldist', this.value, ' mi'); recalc()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-header">
+          <span class="slider-label">Tipping fee ($/ton)</span>
+          <span class="slider-val" id="val-tipping">$68</span>
+        </div>
+        <input type="range" min="20" max="200" value="68" id="sl-tipping"
+               oninput="updateSlider('tipping', this.value, '', '$'); recalc()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-header">
+          <span class="slider-label">Organics capture rate</span>
+          <span class="slider-val" id="val-capture">70%</span>
+        </div>
+        <input type="range" min="10" max="95" value="70" id="sl-capture"
+               oninput="updateSlider('capture', this.value, '%'); recalc()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-header">
+          <span class="slider-label">Planning horizon (years)</span>
+          <span class="slider-val" id="val-horizon">10</span>
+        </div>
+        <input type="range" min="1" max="20" value="10" id="sl-horizon"
+               oninput="updateSlider('horizon', this.value, ' yr'); recalc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="section-label">Prioritization Weights</div>
+    <div class="weight-grid" id="weight-grid">
+      <button class="weight-btn active" onclick="toggleWeight('ghg', this)">GHG Reduction</button>
+      <button class="weight-btn active" onclick="toggleWeight('cost', this)">Cost Effectiveness</button>
+      <button class="weight-btn active" onclick="toggleWeight('diversion', this)">Diversion Volume</button>
+      <button class="weight-btn active" onclick="toggleWeight('food', this)">Food Recovery</button>
+      <button class="weight-btn active" onclick="toggleWeight('jobs', this)">Job Creation</button>
+      <button class="weight-btn active" onclick="toggleWeight('resilience', this)">Resilience</button>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="section-label">SB 1383 Targets</div>
+    <div class="target-bar">
+      <div class="target-row">
+        <span class="target-label">Organic waste reduction vs 2014</span>
+        <span class="target-val">75% by 2025</span>
+      </div>
+      <div class="target-progress"><div class="target-fill" id="sb-progress-1" style="width:11%"></div></div>
+    </div>
+    <div style="height:6px"></div>
+    <div class="target-bar">
+      <div class="target-row">
+        <span class="target-label">Edible food recovery</span>
+        <span class="target-val">20% by 2025</span>
+      </div>
+      <div class="target-progress"><div class="target-fill" id="sb-progress-2" style="width:5%"></div></div>
+    </div>
+  </div>
+
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+  <!-- KPI Strip -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-label">Tons Diverted / yr</div>
+      <div class="kpi-value" id="kpi-diverted">0</div>
+      <div class="kpi-unit">tons per year</div>
+      <div class="kpi-delta delta-neutral" id="kpi-diverted-delta">baseline</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Landfill Reduction</div>
+      <div class="kpi-value" id="kpi-landfill">0%</div>
+      <div class="kpi-unit">vs. current disposal</div>
+      <div class="kpi-delta delta-neutral" id="kpi-landfill-delta">baseline</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Net GHG Reduction</div>
+      <div class="kpi-value" id="kpi-ghg">0</div>
+      <div class="kpi-unit">MTCO₂e / year</div>
+      <div class="kpi-delta delta-neutral" id="kpi-ghg-delta">+hauling offset</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Annual Program Cost</div>
+      <div class="kpi-value" id="kpi-cost">$0</div>
+      <div class="kpi-unit">operating cost / year</div>
+      <div class="kpi-delta delta-neutral" id="kpi-cost-delta">excl. capital</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Net Cost per Ton</div>
+      <div class="kpi-value" id="kpi-cpt">$0</div>
+      <div class="kpi-unit">net of avoided disposal</div>
+      <div class="kpi-delta delta-neutral" id="kpi-cpt-delta">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">VMT Added / yr</div>
+      <div class="kpi-value" id="kpi-vmt">0</div>
+      <div class="kpi-unit">truck miles added</div>
+      <div class="kpi-delta delta-neutral" id="kpi-vmt-delta">—</div>
+    </div>
+  </div>
+
+  <!-- Charts Grid -->
+  <div class="content-grid">
+
+    <!-- GHG chart -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">GHG Emissions by Scenario</div>
+          <div class="card-subtitle">Net MTCO₂e/yr including transportation offset</div>
+        </div>
+        <div class="tab-group">
+          <button class="tab active" onclick="switchGHGView('net', this)">Net</button>
+          <button class="tab" onclick="switchGHGView('gross', this)">Gross</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="chartGHG"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Cost chart -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Program Cost Comparison</div>
+          <div class="card-subtitle">Annual operating cost and net cost per ton</div>
+        </div>
+        <div class="tab-group">
+          <button class="tab active" onclick="switchCostView('annual', this)">Annual</button>
+          <button class="tab" onclick="switchCostView('pertont', this)">Per Ton</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas id="chartCost"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Scenario comparison table -->
+    <div class="card card-full">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Scenario Comparison Matrix</div>
+          <div class="card-subtitle">All active programs vs. baseline — planning-level estimates</div>
+        </div>
+        <div class="note-pill">⚠ Estimates — replace with county data when available</div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="compare-table" id="compare-table">
+          <thead>
+            <tr>
+              <th>Program / Scenario</th>
+              <th>Organics Diverted (tons/yr)</th>
+              <th>Landfill Reduction</th>
+              <th>GHG Reduction (MTCO₂e/yr)</th>
+              <th>Hauling GHG Offset</th>
+              <th>Annual Op Cost</th>
+              <th>Net Cost / Ton</th>
+              <th>VMT Added</th>
+              <th>Infrastructure</th>
+            </tr>
+          </thead>
+          <tbody id="compare-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Diversion chart -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Waste Diversion by Stream</div>
+          <div class="card-subtitle">Tons diverted from landfill per year</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap-tall"><canvas id="chartDiversion"></canvas></div>
+      </div>
+      <div class="legend" id="legend-diversion"></div>
+    </div>
+
+    <!-- Prioritization matrix -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Co-Benefits Prioritization</div>
+          <div class="card-subtitle">Weighted score across community priorities</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="priority-matrix"></div>
+      </div>
+    </div>
+
+    <!-- Transport impacts -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Transportation & Infrastructure Impact</div>
+          <div class="card-subtitle">Additional hauling vs. baseline — active scenarios only</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="transport-grid" id="transport-grid"></div>
+      </div>
+    </div>
+
+    <!-- SB 1383 compliance -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">SB 1383 Compliance Tracker</div>
+          <div class="card-subtitle">Estimated compliance gap vs. selected programs</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="sb-grid" id="sb-grid"></div>
+      </div>
+    </div>
+
+    <!-- Map placeholder -->
+    <div class="card card-full">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Spatial Overview — Del Norte County</div>
+          <div class="card-subtitle">Toggle layers to reveal facility locations and service areas</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding-bottom:0">
+        <div class="map-placeholder" id="map-viz">
+          <div class="map-dots" id="map-dots"></div>
+          <div class="map-label">Del Norte County — GIS layer preview<br><span style="font-size:9px;opacity:0.7">Toggle layers below to update spatial view</span></div>
+        </div>
+      </div>
+      <div class="map-layers" id="map-layers">
+        <button class="map-layer-btn active" onclick="toggleLayer(this)">Transfer Station</button>
+        <button class="map-layer-btn active" onclick="toggleLayer(this)">Landfill</button>
+        <button class="map-layer-btn" onclick="toggleLayer(this)">Food Rescue Orgs</button>
+        <button class="map-layer-btn" onclick="toggleLayer(this)">Community Gardens</button>
+        <button class="map-layer-btn" onclick="toggleLayer(this)">Agricultural Land</button>
+        <button class="map-layer-btn" onclick="toggleLayer(this)">Schools / Civic</button>
+        <button class="map-layer-btn" onclick="toggleLayer(this)">Population Density</button>
+        <button class="map-layer-btn" onclick="toggleLayer(this)">Hauling Routes</button>
+        <button class="map-layer-btn" onclick="toggleLayer(this)">10-mi Travel Shed</button>
+        <button class="map-layer-btn" onclick="toggleLayer(this)">50-mi Travel Shed</button>
+      </div>
+    </div>
+
+    <!-- Multi-year projection -->
+    <div class="card card-full">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Multi-Year GHG Projection</div>
+          <div class="card-subtitle">Cumulative emissions reduction over planning horizon (active programs)</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="height:200px"><canvas id="chartProjection"></canvas></div>
+      </div>
+    </div>
+
+    <div class="footnote card-full">
+      <strong>Methodology notes:</strong> All values are planning-level estimates derived from CalRecycle RDRS data (2021–2025), EPA WARM v16 emission factors, CARB EMFAC 2021 truck emission rates (0.00116 MTCO₂e/mile), and CalRecycle/ReFED program cost benchmarks. GHG reductions shown are net of additional hauling emissions. Food waste estimated at 17% of solid waste disposed (CalRecycle 2021 rural characterization). Green waste tonnage from RDRS codes BRUSH/GRASS/WOOD/STUMP/TREE. Replace all italicized estimates with county-specific data when available. SB 1383 compliance assessment is illustrative only. This tool does not constitute regulatory advice. · Blue Strike Environmental · Rural Counties GHG Calculator Tool · 2026
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script>
+// ── DATA MODEL ──────────────────────────────────────────────────────────────
+
+const COUNTY_DATA = {
+  del_norte: {
+    name: 'Del Norte County',
+    population: 28500,
+    totalDisposed: 24400,   // tons/yr (RDRS 2024)
+    greenWaste: 1525,        // tons/yr (RDRS 2024)
+    recyclables: 397,
+    foodWasteFraction: 0.17,  // CalRecycle rural factor
+    greenWasteFraction: 0.12,
+    baselineGHG: 10736,       // MTCO2e/yr (EPA WARM landfill factor ~0.44/ton)
+    baselineDiversionRate: 0.107,
+  },
+  tuolumne: {
+    name: 'Tuolumne County',
+    population: 52000,
+    totalDisposed: 44600,
+    greenWaste: 2800,
+    recyclables: 720,
+    foodWasteFraction: 0.17,
+    greenWasteFraction: 0.13,
+    baselineGHG: 19624,
+    baselineDiversionRate: 0.095,
+  },
+  amador: {
+    name: 'Amador County',
+    population: 38000,
+    totalDisposed: 32600,
+    greenWaste: 2040,
+    recyclables: 525,
+    foodWasteFraction: 0.17,
+    greenWasteFraction: 0.12,
+    baselineGHG: 14344,
+    baselineDiversionRate: 0.102,
+  }
+};
+
+const SCENARIOS = [
+  { id: 'food_rescue',    name: 'Food Rescue Expansion',    color: '#4a8c5c', active: false,
+    diversionFn: (d,p,cap) => d.totalDisposed * d.foodWasteFraction * 0.3 * (p/100),
+    ghgEF: 0.69, haulMult: 0.3, capCost: 35000,  opCostBase: 45000,  opCostPerTon: 35,
+    infra: 'Storage hubs', vmt_mult: 0.3, jobs: 2, resilience: 4, food_score: 5, food_divert: 4 },
+  { id: 'yard_mulch',     name: 'Yard Waste Mulch',         color: '#7ec8a0', active: false,
+    diversionFn: (d,p,cap) => d.greenWaste * (cap/100) * (p/100),
+    ghgEF: 0.32, haulMult: 1.0, capCost: 120000, opCostBase: 80000,  opCostPerTon: 50,
+    infra: 'Chipping/mulch site', vmt_mult: 1.0, jobs: 3, resilience: 3, food_score: 1, food_divert: 2 },
+  { id: 'windrow',        name: 'Windrow Compost Facility', color: '#2d5a3d', active: false,
+    diversionFn: (d,p,cap) => (d.totalDisposed * d.foodWasteFraction + d.greenWaste) * 0.6 * (p/100) * (cap/100),
+    ghgEF: 0.52, haulMult: 1.5, capCost: 1500000, opCostBase: 250000, opCostPerTon: 75,
+    infra: 'Compost facility + route', vmt_mult: 1.5, jobs: 8, resilience: 5, food_score: 3, food_divert: 5 },
+  { id: 'anaerobic',      name: 'Anaerobic Digestion',      color: '#1a3a2a', active: false,
+    diversionFn: (d,p,cap) => d.totalDisposed * (d.foodWasteFraction + 0.05) * 0.7 * (p/100),
+    ghgEF: 0.85, haulMult: 3.0, capCost: 8000000, opCostBase: 500000, opCostPerTon: 110,
+    infra: 'Regional digester (long-haul)', vmt_mult: 3.0, jobs: 12, resilience: 4, food_score: 4, food_divert: 5 },
+  { id: 'backyard',       name: 'Backyard Composting',      color: '#d4a843', active: false,
+    diversionFn: (d,p,cap) => d.population * 0.003 * (p/100),
+    ghgEF: 0.39, haulMult: 0.0, capCost: 60000,  opCostBase: 25000,  opCostPerTon: 28,
+    infra: 'Household bins (no routes)', vmt_mult: 0.0, jobs: 1, resilience: 5, food_score: 2, food_divert: 2 },
+  { id: 'community',      name: 'Community Garden Compost', color: '#c4622d', active: false,
+    diversionFn: (d,p,cap) => d.population * 0.0015 * (p/100),
+    ghgEF: 0.39, haulMult: 0.2, capCost: 45000,  opCostBase: 18000,  opCostPerTon: 32,
+    infra: 'Local community sites', vmt_mult: 0.2, jobs: 2, resilience: 4, food_score: 3, food_divert: 3 },
+  { id: 'biochar',        name: 'Biochar / Soil Amendment', color: '#3a6b8a', active: false,
+    diversionFn: (d,p,cap) => d.greenWaste * 0.4 * (p/100),
+    ghgEF: 3.5,  haulMult: 0.8, capCost: 800000, opCostBase: 180000, opCostPerTon: 90,
+    infra: 'Local biochar processing', vmt_mult: 0.8, jobs: 4, resilience: 3, food_score: 1, food_divert: 3 },
+  { id: 'forestry',       name: 'Forestry + Organics Co-Compost', color: '#6b4f35', active: false,
+    diversionFn: (d,p,cap) => d.greenWaste * 0.5 * (p/100),
+    ghgEF: 0.45, haulMult: 1.2, capCost: 500000, opCostBase: 140000, opCostPerTon: 65,
+    infra: 'Forest biomass processing site', vmt_mult: 1.2, jobs: 5, resilience: 5, food_score: 1, food_divert: 3 },
+  { id: 'school',         name: 'School Compost Program',   color: '#9aaa9e', active: false,
+    diversionFn: (d,p,cap) => Math.min(80, d.population * 0.0005) * (p/100),
+    ghgEF: 0.39, haulMult: 0.1, capCost: 20000,  opCostBase: 12000,  opCostPerTon: 25,
+    infra: 'School bins + local dropoff', vmt_mult: 0.1, jobs: 1, resilience: 3, food_score: 4, food_divert: 2 },
+];
+
+const TRUCK_EF = 0.00116; // MTCO2e/mile (CARB EMFAC 2021)
+const TRUCK_PAYLOAD = 6.0; // tons/load
+
+// Weights (active = 1, inactive = 0)
+let weights = { ghg:1, cost:1, diversion:1, food:1, jobs:1, resilience:1 };
+let currentCounty = 'del_norte';
+let ghgView = 'net';
+let costView = 'annual';
+let charts = {};
+
+// ── HELPERS ─────────────────────────────────────────────────────────────────
+function getSlider(id) { return +document.getElementById('sl-'+id).value; }
+function fmt(n, dec=0) { return n.toLocaleString('en-US', {maximumFractionDigits:dec, minimumFractionDigits:dec}); }
+function fmtK(n) { return n >= 1000000 ? '$'+fmt(n/1000000,1)+'M' : n >= 1000 ? '$'+fmt(n/1000,0)+'K' : '$'+fmt(n,0); }
+
+function calcScenario(s, county, params) {
+  const tons = s.diversionFn(county, params.participation, params.capture);
+  const haulDist = params.hauldist;
+  const trips = tons / TRUCK_PAYLOAD;
+  const vmtAdded = trips * 2 * haulDist * s.vmt_mult;
+  const haulGHG = vmtAdded * TRUCK_EF;
+  const diversionGHG = tons * s.ghgEF;
+  const netGHG = diversionGHG - haulGHG;
+  const opCost = s.opCostBase + tons * s.opCostPerTon;
+  const avoidedDisposal = tons * params.tipping;
+  const netOpCost = Math.max(0, opCost - avoidedDisposal);
+  const netCPT = tons > 0 ? netOpCost / tons : 0;
+  const landfillPct = tons / county.totalDisposed * 100;
+  return { tons, vmtAdded, haulGHG, diversionGHG, netGHG, opCost, netOpCost, netCPT, landfillPct, trips };
+}
+
+// ── INIT UI ──────────────────────────────────────────────────────────────────
+function initSidebar() {
+  const grid = document.getElementById('scenario-grid');
+  grid.innerHTML = '';
+  SCENARIOS.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'scenario-item' + (s.active ? ' active' : '');
+    d.id = 'si-'+s.id;
+    d.innerHTML = `
+      <div class="scenario-left">
+        <div class="scenario-dot" style="background:${s.color}"></div>
+        <div class="scenario-name">${s.name}</div>
+      </div>
+      <div class="scenario-toggle"></div>
+    `;
+    d.onclick = () => toggleScenario(s.id);
+    grid.appendChild(d);
+  });
+}
+
+// ── SCENARIO TOGGLE ──────────────────────────────────────────────────────────
+function toggleScenario(id) {
+  const s = SCENARIOS.find(x => x.id === id);
+  s.active = !s.active;
+  const el = document.getElementById('si-'+id);
+  el.classList.toggle('active', s.active);
+  recalc();
+}
+
+// ── COUNTY ───────────────────────────────────────────────────────────────────
+function setCounty(id, btn) {
+  currentCounty = id;
+  document.querySelectorAll('.county-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  recalc();
+}
+
+// ── SLIDER HELPER ─────────────────────────────────────────────────────────────
+function updateSlider(id, val, suffix, prefix='') {
+  document.getElementById('val-'+id).textContent = prefix + val + suffix;
+}
+
+// ── WEIGHT TOGGLE ─────────────────────────────────────────────────────────────
+function toggleWeight(key, btn) {
+  weights[key] = weights[key] ? 0 : 1;
+  btn.classList.toggle('active', !!weights[key]);
+  recalc();
+}
+
+// ── RECALC MASTER ────────────────────────────────────────────────────────────
+function recalc() {
+  const county = COUNTY_DATA[currentCounty];
+  const params = {
+    participation: getSlider('participation'),
+    hauldist: getSlider('hauldist'),
+    tipping: getSlider('tipping'),
+    capture: getSlider('capture'),
+    horizon: getSlider('horizon'),
+  };
+
+  const active = SCENARIOS.filter(s => s.active);
+  const results = active.map(s => ({ s, r: calcScenario(s, county, params) }));
+
+  // Aggregate KPIs
+  let totalTons = results.reduce((a,x) => a + x.r.tons, 0);
+  let totalGHG  = results.reduce((a,x) => a + x.r.netGHG, 0);
+  let totalCost = results.reduce((a,x) => a + x.r.opCost, 0);
+  let totalNetCost = results.reduce((a,x) => a + x.r.netOpCost, 0);
+  let totalVMT  = results.reduce((a,x) => a + x.r.vmtAdded, 0);
+  let landfillPct = totalTons / county.totalDisposed * 100;
+  let netCPT    = totalTons > 0 ? totalNetCost / totalTons : 0;
+
+  updateKPIs(totalTons, landfillPct, totalGHG, totalCost, netCPT, totalVMT, county);
+  updateTable(results, county, params);
+  updateChartGHG(results, county);
+  updateChartCost(results);
+  updateChartDiversion(results, county, params);
+  updateTransport(results, county, params);
+  updatePriority(active, results);
+  updateSB(totalTons, county, params);
+  updateProjection(totalGHG, params.horizon);
+}
+
+// ── KPIs ─────────────────────────────────────────────────────────────────────
+function updateKPIs(tons, landPct, ghg, cost, cpt, vmt, county) {
+  setText('kpi-diverted', fmt(Math.round(tons)));
+  setText('kpi-landfill', landPct.toFixed(1)+'%');
+  setText('kpi-ghg', fmt(Math.round(ghg)));
+  setText('kpi-cost', fmtK(cost));
+  setText('kpi-cpt', '$'+fmt(Math.round(cpt)));
+  setText('kpi-vmt', fmt(Math.round(vmt)));
+
+  setDelta('kpi-diverted-delta', tons > 0 ? '+'+fmt(Math.round(tons))+' tons' : 'none selected', tons > 0 ? 'good' : 'neutral');
+  setDelta('kpi-landfill-delta', landPct > 0 ? '↓'+landPct.toFixed(1)+'% landfill' : '—', landPct >= 10 ? 'good' : landPct > 0 ? 'warn' : 'neutral');
+  setDelta('kpi-ghg-delta', ghg > 0 ? '−'+fmt(Math.round(ghg))+' MTCO₂e' : ghg < 0 ? 'net increase from hauling' : '—', ghg > 500 ? 'good' : ghg > 0 ? 'warn' : ghg < 0 ? 'bad' : 'neutral');
+  setDelta('kpi-cost-delta', cost > 0 ? 'active programs: '+(SCENARIOS.filter(s=>s.active).length) : '—', 'neutral');
+  setDelta('kpi-cpt-delta', cpt > 0 ? 'net of $'+getSlider('tipping')+'/ton avoided' : '—', cpt < 80 ? 'good' : cpt < 150 ? 'warn' : 'bad');
+  setDelta('kpi-vmt-delta', vmt > 0 ? '+'+fmt(Math.round(vmt))+' mi added' : '—', vmt > 50000 ? 'bad' : vmt > 10000 ? 'warn' : 'neutral');
+}
+
+function setText(id, v) { const e = document.getElementById(id); if(e) e.textContent = v; }
+function setDelta(id, text, cls) {
+  const e = document.getElementById(id);
+  if (!e) return;
+  e.textContent = text;
+  e.className = 'kpi-delta delta-'+cls;
+}
+
+// ── TABLE ────────────────────────────────────────────────────────────────────
+function updateTable(results, county, params) {
+  const tbody = document.getElementById('compare-tbody');
+  tbody.innerHTML = '';
+
+  // Baseline row
+  const brow = document.createElement('tr');
+  brow.className = 'baseline-row';
+  brow.innerHTML = `
+    <td><em>Baseline (current system)</em></td>
+    <td>0</td><td>0%</td><td>0</td><td>—</td>
+    <td>${fmtK(county.totalDisposed * params.tipping)}/yr</td>
+    <td>$${fmt(params.tipping)}/ton</td>
+    <td>Existing</td><td>Landfill routes only</td>`;
+  tbody.appendChild(brow);
+
+  const maxTons = Math.max(...results.map(x=>x.r.tons), 1);
+  const maxGHG  = Math.max(...results.map(x=>x.r.netGHG), 1);
+  const maxCost = Math.max(...results.map(x=>x.r.opCost), 1);
+
+  results.forEach(({s, r}) => {
+    const row = document.createElement('tr');
+    const ghgClass = r.netGHG > 0 ? 'good' : 'bad';
+    row.innerHTML = `
+      <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:6px"></span>${s.name}</td>
+      <td>
+        <div class="bar-inline">
+          <div class="bar-bg"><div class="bar-fill" style="width:${r.tons/maxTons*100}%;background:${s.color}"></div></div>
+          <span class="bar-label">${fmt(Math.round(r.tons))}</span>
+        </div>
+      </td>
+      <td>${r.landfillPct.toFixed(1)}%</td>
+      <td>
+        <div class="bar-inline">
+          <div class="bar-bg"><div class="bar-fill" style="width:${Math.max(0,r.netGHG)/maxGHG*100}%;background:${r.netGHG>0?'#4a8c5c':'#c4622d'}"></div></div>
+          <span class="bar-label" style="color:${r.netGHG>0?'#1a5c28':'#8b1a1a'}">${r.netGHG>0?'+':''}${fmt(Math.round(r.netGHG))}</span>
+        </div>
+      </td>
+      <td style="color:#c4622d;font-family:'DM Mono',monospace;font-size:10px">−${fmt(Math.round(r.haulGHG))}</td>
+      <td>${fmtK(r.opCost)}</td>
+      <td>$${fmt(Math.round(r.netCPT))}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:10px">${fmt(Math.round(r.vmtAdded))}</td>
+      <td style="font-size:10px;color:var(--smoke)">${s.infra}</td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  if (results.length === 0) {
+    const row = document.createElement('tr');
+    row.innerHTML = '<td colspan="9" style="text-align:center;color:var(--ghost);padding:20px;font-style:italic">Select programs from the sidebar to compare scenarios</td>';
+    tbody.appendChild(row);
+  }
+}
+
+// ── CHART: GHG ───────────────────────────────────────────────────────────────
+function updateChartGHG(results, county) {
+  const labels = ['Baseline', ...results.map(x=>x.s.name.replace('/ ','/\n'))];
+  const vals = [0, ...results.map(x => ghgView === 'net' ? x.r.netGHG : x.r.diversionGHG)];
+  const colors = ['#9aaa9e', ...results.map(x=>x.s.color)];
+
+  if (charts.ghg) charts.ghg.destroy();
+  charts.ghg = new Chart(document.getElementById('chartGHG'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: colors,
+        borderRadius: 3,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: {
+          label: ctx => `${fmt(Math.round(ctx.raw))} MTCO₂e/yr`
+        }}
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 9, family:'DM Sans' }, color:'#5a6b62', maxRotation:30 } },
+        y: { grid: { color: 'rgba(0,0,0,0.05)' },
+             ticks: { font: { size: 9, family:'DM Mono' }, color:'#5a6b62',
+               callback: v => fmt(v)+' t' } }
+      }
+    }
+  });
+}
+
+// ── CHART: COST ───────────────────────────────────────────────────────────────
+function updateChartCost(results) {
+  if (!results.length) {
+    if (charts.cost) { charts.cost.destroy(); charts.cost=null; }
+    return;
+  }
+  const labels = results.map(x=>x.s.name);
+  const vals = costView === 'annual'
+    ? results.map(x=>x.r.opCost)
+    : results.map(x=>x.r.netCPT);
+
+  if (charts.cost) charts.cost.destroy();
+  charts.cost = new Chart(document.getElementById('chartCost'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: results.map(x=>x.s.color),
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: {
+          label: ctx => costView==='annual' ? fmtK(ctx.raw)+'/yr' : '$'+fmt(ctx.raw,0)+'/ton'
+        }}
+      },
+      scales: {
+        x: { grid: { color:'rgba(0,0,0,0.05)' }, ticks: { font:{size:9,family:'DM Mono'}, color:'#5a6b62',
+            callback: v => costView==='annual' ? fmtK(v) : '$'+fmt(v) } },
+        y: { grid: { display:false }, ticks: { font:{size:9,family:'DM Sans'}, color:'#5a6b62' } }
+      }
+    }
+  });
+}
+
+// ── CHART: DIVERSION BY STREAM ────────────────────────────────────────────────
+function updateChartDiversion(results, county, params) {
+  const active = results.length;
+  if (!active) {
+    if (charts.div) { charts.div.destroy(); charts.div=null; }
+    document.getElementById('legend-diversion').innerHTML = '';
+    return;
+  }
+
+  const labels = results.map(x=>x.s.name);
+  const foodTons   = results.map(x => x.s.id === 'food_rescue' || x.s.id === 'anaerobic' || x.s.id === 'school'
+    ? x.r.tons * 0.6 : x.r.tons * 0.05);
+  const greenTons  = results.map(x => x.s.id === 'yard_mulch' || x.s.id === 'biochar' || x.s.id === 'forestry'
+    ? x.r.tons * 0.85 : x.r.tons * 0.15);
+  const otherTons  = results.map((x,i) => Math.max(0, x.r.tons - foodTons[i] - greenTons[i]));
+
+  if (charts.div) charts.div.destroy();
+  charts.div = new Chart(document.getElementById('chartDiversion'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Food / Organics', data:foodTons, backgroundColor:'#4a8c5c', borderRadius:2 },
+        { label:'Green Waste', data:greenTons, backgroundColor:'#7ec8a0', borderRadius:2 },
+        { label:'Other', data:otherTons, backgroundColor:'#d4a843', borderRadius:2 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(Math.round(ctx.raw))} tons`}}},
+      scales:{
+        x:{stacked:true,grid:{display:false},ticks:{font:{size:9,family:'DM Sans'},color:'#5a6b62',maxRotation:30}},
+        y:{stacked:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:9,family:'DM Mono'},color:'#5a6b62',callback:v=>fmt(v)+' t'}}
+      }
+    }
+  });
+
+  const leg = document.getElementById('legend-diversion');
+  leg.innerHTML = [
+    ['#4a8c5c','Food / Organics'],['#7ec8a0','Green Waste'],['#d4a843','Other streams']
+  ].map(([c,l])=>`<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${l}</div>`).join('');
+}
+
+// ── TRANSPORT GRID ────────────────────────────────────────────────────────────
+function updateTransport(results, county, params) {
+  const grid = document.getElementById('transport-grid');
+  const totVMT   = results.reduce((a,x)=>a+x.r.vmtAdded,0);
+  const totTrips = results.reduce((a,x)=>a+x.r.trips,0);
+  const totHaulGHG = results.reduce((a,x)=>a+x.r.haulGHG,0);
+  const routes   = results.filter(x=>x.s.vmt_mult > 0.5).length;
+
+  grid.innerHTML = [
+    { icon:'🚛', name:'VMT Added', val: fmt(Math.round(totVMT)), unit:'miles/yr', chg: totVMT > 0 ? '+'+fmt(Math.round(totVMT)) : '—', cls: totVMT > 30000 ? 'pos' : 'neg' },
+    { icon:'🔁', name:'Extra Trips', val: fmt(Math.round(totTrips)), unit:'round-trips/yr', chg: totTrips > 0 ? '+'+fmt(Math.round(totTrips)) : '—', cls:'pos' },
+    { icon:'💨', name:'Hauling GHG', val: fmt(Math.round(totHaulGHG)), unit:'MTCO₂e/yr', chg: totHaulGHG > 0 ? '−'+fmt(Math.round(totHaulGHG)) : '—', cls:'pos' },
+    { icon:'🛣️', name:'New Routes', val: routes, unit:'additional routes', chg: routes > 0 ? '+'+routes+' routes' : 'none', cls: routes > 2 ? 'pos' : 'neg' },
+  ].map(t=>`
+    <div class="transport-item">
+      <div class="transport-icon">${t.icon}</div>
+      <div class="transport-name">${t.name}</div>
+      <div class="transport-val">${t.val}</div>
+      <div class="transport-unit">${t.unit}</div>
+      <div class="transport-change ${t.cls}">${t.chg}</div>
+    </div>
+  `).join('');
+}
+
+// ── PRIORITY MATRIX ───────────────────────────────────────────────────────────
+function updatePriority(active, results) {
+  const container = document.getElementById('priority-matrix');
+  if (!active.length) {
+    container.innerHTML = '<div style="color:var(--ghost);font-size:11px;text-align:center;padding:20px">Select programs to view prioritization scores</div>';
+    return;
+  }
+
+  const criteria = ['GHG', 'Cost', 'Diversion', 'Food', 'Jobs', 'Resilience'];
+  const wkeys    = ['ghg','cost','diversion','food','jobs','resilience'];
+
+  function score(s, r) {
+    const scores = {
+      ghg:        r.netGHG > 1000 ? 3 : r.netGHG > 200 ? 2 : 1,
+      cost:       r.netCPT < 50 ? 3 : r.netCPT < 100 ? 2 : 1,
+      diversion:  r.tons > 500 ? 3 : r.tons > 100 ? 2 : 1,
+      food:       s.food_score,
+      jobs:       s.jobs >= 5 ? 3 : s.jobs >= 3 ? 2 : 1,
+      resilience: s.resilience >= 4 ? 3 : s.resilience >= 3 ? 2 : 1,
+    };
+    return scores;
+  }
+
+  let html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:9px">';
+  html += '<tr><th style="padding:4px 6px;color:var(--smoke);font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--sand)">Program</th>';
+  criteria.forEach((c,i) => {
+    const active = weights[wkeys[i]];
+    html += `<th style="padding:4px 6px;text-align:center;color:${active?'var(--ink)':'var(--ghost)'};font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--sand)">${c}</th>`;
+  });
+  html += '<th style="padding:4px 6px;text-align:center;color:var(--ink);font-weight:700;border-bottom:1px solid var(--sand)">Score</th></tr>';
+
+  results.forEach(({s, r}) => {
+    const sc = score(s, r);
+    const totalScore = wkeys.reduce((a,k) => a + sc[k] * (weights[k] || 0), 0);
+    const maxScore   = wkeys.reduce((a,k) => a + 3 * (weights[k] || 0), 0);
+    const pct = maxScore > 0 ? (totalScore/maxScore*100).toFixed(0) : 0;
+
+    html += `<tr>
+      <td style="padding:6px;font-size:10px;color:var(--ink);display:flex;align-items:center;gap:5px;white-space:nowrap">
+        <span style="width:7px;height:7px;border-radius:50%;background:${s.color};display:inline-block"></span>${s.name}
+      </td>`;
+    wkeys.forEach(k => {
+      const v = sc[k];
+      const inactive = !weights[k];
+      const cls = v===3?'cell-h':v===2?'cell-m':'cell-l';
+      const lbl = v===3?'H':v===2?'M':'L';
+      html += `<td style="padding:3px"><div class="${inactive?'':''+cls}" style="display:flex;align-items:center;justify-content:center;height:24px;border-radius:3px;font-size:9px;font-weight:600;${inactive?'opacity:0.3':''}">${lbl}</div></td>`;
+    });
+    const scoreColor = pct >= 70 ? '#1a5c28' : pct >= 45 ? '#8b4513' : '#8b1a1a';
+    const scoreBg    = pct >= 70 ? '#c8ecd8' : pct >= 45 ? '#fde8c8' : '#f8d4cc';
+    html += `<td style="padding:3px;text-align:center"><div style="background:${scoreBg};color:${scoreColor};border-radius:3px;padding:3px 6px;font-family:'Fraunces',serif;font-size:13px;font-weight:700">${pct}%</div></td>`;
+    html += '</tr>';
+  });
+
+  html += '</table></div>';
+  container.innerHTML = html;
+}
+
+// ── SB 1383 ────────────────────────────────────────────────────────────────────
+function updateSB(totalTons, county, params) {
+  const organics2014est = county.totalDisposed * 0.29; // est 2014 baseline
+  const target75 = organics2014est * 0.75;
+  const currentOrganics = county.totalDisposed * (county.foodWasteFraction + county.greenWasteFraction);
+  const pct75 = Math.min(100, totalTons / target75 * 100);
+  const foodRecoveryActive = SCENARIOS.find(s=>s.id==='food_rescue'&&s.active);
+  const foodRecoveryTons = foodRecoveryActive ? calcScenario(foodRecoveryActive, county, params).tons : 0;
+  const foodPct = Math.min(100, foodRecoveryTons / (county.totalDisposed * county.foodWasteFraction * 0.2) * 100);
+
+  document.getElementById('sb-progress-1').style.width = pct75 + '%';
+  document.getElementById('sb-progress-2').style.width = foodPct + '%';
+
+  const grid = document.getElementById('sb-grid');
+  grid.innerHTML = [
+    { req:'75% Organic Waste Reduction', val: pct75.toFixed(0)+'%', desc:`Target: ${fmt(Math.round(target75))} tons/yr diverted`, cls: pct75>=75?'status-met':pct75>=30?'status-partial':'status-gap' },
+    { req:'20% Edible Food Recovery', val: foodPct.toFixed(0)+'%', desc: foodRecoveryActive ? 'Food Rescue program active' : 'Enable Food Rescue to meet this target', cls: foodPct>=100?'status-met':foodPct>=50?'status-partial':'status-gap' },
+    { req:'Procurement Target', val: totalTons >= 50 ? 'MET' : 'GAP', desc: totalTons >= 50 ? 'Compost/mulch procurement pathway active' : 'Requires active compost program', cls: totalTons>=50?'status-met':'status-gap' },
+  ].map(item=>`
+    <div class="sb-item">
+      <div class="sb-req">${item.req}</div>
+      <div class="sb-status ${item.cls}">${item.val}</div>
+      <div class="sb-desc">${item.desc}</div>
+    </div>
+  `).join('');
+}
+
+// ── MULTI-YEAR PROJECTION ─────────────────────────────────────────────────────
+function updateProjection(annualGHG, horizon) {
+  const years = Array.from({length:horizon}, (_,i)=>2026+i);
+  const cumBaseline = years.map((_,i) => 0);
+  const cumActive   = years.map((_,i) => annualGHG * (i+1));
+
+  if (charts.proj) charts.proj.destroy();
+  charts.proj = new Chart(document.getElementById('chartProjection'), {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        { label:'Baseline (no programs)', data:cumBaseline, borderColor:'#9aaa9e', backgroundColor:'rgba(154,170,158,0.1)', fill:true, tension:0.3, borderDash:[4,3], pointRadius:0 },
+        { label:'Active programs', data:cumActive, borderColor:'#4a8c5c', backgroundColor:'rgba(74,140,92,0.12)', fill:true, tension:0.3, pointRadius:3, pointBackgroundColor:'#4a8c5c' },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true, position:'top', labels:{font:{size:10,family:'DM Sans'},color:'#5a6b62',boxWidth:10,usePointStyle:true}},
+        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(Math.round(ctx.raw))} MTCO₂e cumulative`}}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9,family:'DM Mono'},color:'#5a6b62'}},
+        y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:9,family:'DM Mono'},color:'#5a6b62',callback:v=>fmt(v)}}
+      }
+    }
+  });
+}
+
+// ── CHART VIEW SWITCHES ───────────────────────────────────────────────────────
+function switchGHGView(v, btn) {
+  ghgView = v;
+  document.querySelectorAll('#chartGHG').forEach(()=>{});
+  btn.closest('.tab-group').querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  recalc();
+}
+function switchCostView(v, btn) {
+  costView = v;
+  btn.closest('.tab-group').querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  recalc();
+}
+
+// ── MAP LAYERS ────────────────────────────────────────────────────────────────
+function toggleLayer(btn) {
+  btn.classList.toggle('active');
+  updateMapDots();
+}
+
+function updateMapDots() {
+  const activeLayers = Array.from(document.querySelectorAll('.map-layer-btn.active')).map(b=>b.textContent);
+  const dots = document.getElementById('map-dots');
+  dots.innerHTML = '';
+
+  const pinDefs = {
+    'Transfer Station':   [{x:45, y:52, color:'#1a3a2a'}],
+    'Landfill':           [{x:60, y:72, color:'#c4622d'}],
+    'Food Rescue Orgs':   [{x:30, y:40, color:'#4a8c5c'},{x:55,y:30,color:'#4a8c5c'}],
+    'Community Gardens':  [{x:70, y:45, color:'#7ec8a0'},{x:25,y:65,color:'#7ec8a0'}],
+    'Schools / Civic':    [{x:40, y:35, color:'#d4a843'},{x:65,y:55,color:'#d4a843'}],
+  };
+
+  activeLayers.forEach(layer => {
+    if (pinDefs[layer]) {
+      pinDefs[layer].forEach(pin => {
+        const el = document.createElement('div');
+        el.className = 'map-pin';
+        el.style.cssText = `left:${pin.x}%;top:${pin.y}%;background:${pin.color};`;
+        el.title = layer;
+        dots.appendChild(el);
+      });
+    }
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+initSidebar();
+updateMapDots();
+recalc();
+</script>
+</body>
+</html>
