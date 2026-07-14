@@ -5,11 +5,11 @@
 
 ## Goal
 
-Get `dashboards.bluestrike.com` live, hosting an interactive Streamlit app that will hold the Rural Counties GHG Calculator (v0.1 preview built, more scenarios planned) plus future BSE client dashboards.
+Get `dashboards.bluestrikeenvironmental.com` live, hosting an interactive Streamlit app that will hold the Rural Counties GHG Calculator (v0.1 preview built, more scenarios planned) plus future BSE client dashboards.
 
 ## What is done
 
-- ✅ **GoDaddy access** confirmed. DNS panel is accessible at `godaddy.com` → My Products → bluestrike.com → Manage DNS.
+- ✅ **GoDaddy access** confirmed. DNS panel is accessible at `godaddy.com` → My Products → bluestrikeenvironmental.com → Manage DNS.
 - ✅ **Blue Strike GitHub organization** created at `https://github.com/Blue-Strike-Environmental`. Personal `brittaniabelize` account is an owner.
 - ✅ **Streamlit Community Cloud account** created using Blue Strike gmail. Signed in via GitHub.
 - ✅ **Starter Streamlit app scaffolded locally** at `~/Documents/BSE/dashboards/`. Files present:
@@ -77,12 +77,12 @@ First deploy takes 2 to 5 minutes. Watch the build logs stream by. When it says 
 ### 4. Get the CNAME target from Streamlit
 
 - In the deployed app's Streamlit dashboard (share.streamlit.io), click **Settings** (gear icon) → **Custom domain** tab
-- Enter `dashboards.bluestrike.com` as the custom domain
+- Enter `dashboards.bluestrikeenvironmental.com` as the custom domain
 - Streamlit will display a CNAME target it wants you to point at. Copy that exact value.
 
 ### 5. Add the CNAME record in GoDaddy
 
-- Go to `godaddy.com` → My Products → bluestrike.com → **Manage DNS**
+- Go to `godaddy.com` → My Products → bluestrikeenvironmental.com → **Manage DNS**
 - Click **Add New Record**
 - Fill in:
   - **Type:** CNAME
@@ -96,7 +96,7 @@ First deploy takes 2 to 5 minutes. Watch the build logs stream by. When it says 
 - Return to Streamlit → Settings → Custom domain
 - Click **Verify** button
 - Cert issues automatically within a few minutes
-- Test: open `https://dashboards.bluestrike.com` in a browser. Should load the app.
+- Test: open `https://dashboards.bluestrikeenvironmental.com` in a browser. Should load the app.
 
 ## Accounts and handles
 
@@ -105,12 +105,12 @@ First deploy takes 2 to 5 minutes. Watch the build logs stream by. When it says 
 | GitHub personal | `brittaniabelize` |
 | GitHub org | `https://github.com/Blue-Strike-Environmental` |
 | Streamlit | signed in via GitHub as `brittaniabelize`, using Blue Strike gmail |
-| GoDaddy | Brittany's own account, has access to `bluestrike.com` |
+| GoDaddy | Brittany's own account, has access to `bluestrikeenvironmental.com` |
 
 ## Local file locations
 
 - **Local scaffold:** `~/Documents/BSE/dashboards/`
-- **Target subdomain:** `dashboards.bluestrike.com`
+- **Target subdomain:** `dashboards.bluestrikeenvironmental.com`
 - **Streamlit temporary URL after deploy:** `blue-strike-dashboards.streamlit.app` (assuming that name is available; pick a different subdomain if not)
 
 ## Design mockups (already published as claude.ai artifacts)
@@ -134,4 +134,4 @@ These also exist as local files in `~/Documents/BSE/Rural Counties/Phase 3/Dashb
 
 - **GitHub asks for password on push:** GitHub disabled password auth. Use a Personal Access Token instead. Generate at `github.com/settings/tokens` (classic tokens, `repo` scope), use it as the password when prompted.
 - **Streamlit does not see the org repos:** Streamlit's GitHub App has not been installed on the Blue-Strike-Environmental org yet. Click "Can't find your repo?" in the Streamlit deploy dialog to install it.
-- **Custom domain fails to verify:** DNS propagation can take up to 1 hour. Wait, then click Verify again. If still failing after an hour, double check that the CNAME record Name field says just `dashboards` (not `dashboards.bluestrike.com`).
+- **Custom domain fails to verify:** DNS propagation can take up to 1 hour. Wait, then click Verify again. If still failing after an hour, double check that the CNAME record Name field says just `dashboards` (not `dashboards.bluestrikeenvironmental.com`).
