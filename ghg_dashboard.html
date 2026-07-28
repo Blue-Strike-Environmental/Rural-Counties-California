@@ -280,34 +280,17 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 /* Weight toggles */
-.weight-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
+.weight-grid { display: flex; flex-direction: column; gap: 8px; }
+.weight-row { display: flex; flex-direction: column; gap: 3px; }
+.weight-row-header { display: flex; justify-content: space-between; align-items: center; }
+.weight-row-label { font-size: 10px; color: var(--ghost); letter-spacing: 0.04em; }
+.weight-row-val {
+  font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace;
+  color: var(--mint); min-width: 18px; text-align: right;
 }
-.weight-btn {
-  padding: 5px 4px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--rad);
-  color: var(--ghost);
-  font-size: 9px;
-  font-family: 'DM Sans', sans-serif;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.15s;
-  letter-spacing: 0.02em;
-  line-height: 1.3;
-}
-.weight-btn.active {
-  background: rgba(74,140,92,0.25);
-  border-color: var(--sage);
-  color: var(--mint);
-  font-weight: 600;
-}
-.weight-btn:hover:not(.active) {
-  background: rgba(255,255,255,0.1);
-  color: var(--white);
+.weight-row input[type=range] {
+  width: 100%; height: 3px; cursor: pointer;
+  accent-color: var(--sage);
 }
 
 /* SB1383 target */
@@ -948,12 +931,48 @@ input[type=range]::-webkit-slider-runnable-track {
   <div class="sidebar-section">
     <div class="section-label">Prioritization Weights</div>
     <div class="weight-grid" id="weight-grid">
-      <button class="weight-btn active" onclick="toggleWeight('ghg', this)">GHG Reduction</button>
-      <button class="weight-btn active" onclick="toggleWeight('cost', this)">Cost Effectiveness</button>
-      <button class="weight-btn active" onclick="toggleWeight('diversion', this)">Diversion Volume</button>
-      <button class="weight-btn active" onclick="toggleWeight('food', this)">Food Recovery</button>
-      <button class="weight-btn active" onclick="toggleWeight('jobs', this)">Job Creation</button>
-      <button class="weight-btn active" onclick="toggleWeight('resilience', this)">Resilience</button>
+      <div class="weight-row">
+        <div class="weight-row-header">
+          <span class="weight-row-label">GHG Reduction</span>
+          <span class="weight-row-val" id="wv-ghg">5</span>
+        </div>
+        <input type="range" min="1" max="10" step="1" value="5" oninput="setWeight('ghg', +this.value)">
+      </div>
+      <div class="weight-row">
+        <div class="weight-row-header">
+          <span class="weight-row-label">Cost Effectiveness</span>
+          <span class="weight-row-val" id="wv-cost">5</span>
+        </div>
+        <input type="range" min="1" max="10" step="1" value="5" oninput="setWeight('cost', +this.value)">
+      </div>
+      <div class="weight-row">
+        <div class="weight-row-header">
+          <span class="weight-row-label">Diversion Volume</span>
+          <span class="weight-row-val" id="wv-diversion">5</span>
+        </div>
+        <input type="range" min="1" max="10" step="1" value="5" oninput="setWeight('diversion', +this.value)">
+      </div>
+      <div class="weight-row">
+        <div class="weight-row-header">
+          <span class="weight-row-label">Food Recovery</span>
+          <span class="weight-row-val" id="wv-food">5</span>
+        </div>
+        <input type="range" min="1" max="10" step="1" value="5" oninput="setWeight('food', +this.value)">
+      </div>
+      <div class="weight-row">
+        <div class="weight-row-header">
+          <span class="weight-row-label">Job Creation</span>
+          <span class="weight-row-val" id="wv-jobs">5</span>
+        </div>
+        <input type="range" min="1" max="10" step="1" value="5" oninput="setWeight('jobs', +this.value)">
+      </div>
+      <div class="weight-row">
+        <div class="weight-row-header">
+          <span class="weight-row-label">Resilience</span>
+          <span class="weight-row-val" id="wv-resilience">5</span>
+        </div>
+        <input type="range" min="1" max="10" step="1" value="5" oninput="setWeight('resilience', +this.value)">
+      </div>
     </div>
   </div>
 
@@ -1322,8 +1341,8 @@ const SCENARIOS = [
 const TRUCK_EF = 0.00116; // MTCO2e/mile (CARB EMFAC 2021)
 const TRUCK_PAYLOAD = 6.0; // tons/load
 
-// Weights (active = 1, inactive = 0)
-let weights = { ghg:1, cost:1, diversion:1, food:1, jobs:1, resilience:1 };
+// Weights: 1 to 10, default 5 (Figma prioritization sliders)
+let weights = { ghg:5, cost:5, diversion:5, food:5, jobs:5, resilience:5 };
 let currentCounty = 'del_norte';
 let ghgView = 'net';
 let costView = 'annual';
@@ -1401,10 +1420,11 @@ function updateSlider(id, val, suffix, prefix='') {
   document.getElementById('val-'+id).textContent = prefix + val + suffix;
 }
 
-// ── WEIGHT TOGGLE ─────────────────────────────────────────────────────────────
-function toggleWeight(key, btn) {
-  weights[key] = weights[key] ? 0 : 1;
-  btn.classList.toggle('active', !!weights[key]);
+// ── WEIGHT SLIDERS ────────────────────────────────────────────────────────────
+function setWeight(key, value) {
+  weights[key] = value;
+  const el = document.getElementById('wv-' + key);
+  if (el) el.textContent = value;
   recalc();
 }
 
@@ -1707,13 +1727,12 @@ function updateTransport(results, county, params) {
   const routes   = results.filter(x=>x.s.vmt_mult > 0.5).length;
 
   grid.innerHTML = [
-    { icon:'🚛', name:'VMT Added', val: fmt(Math.round(totVMT)), unit:'miles/yr', chg: totVMT > 0 ? '+'+fmt(Math.round(totVMT)) : '—', cls: totVMT > 30000 ? 'pos' : 'neg' },
-    { icon:'🔁', name:'Extra Trips', val: fmt(Math.round(totTrips)), unit:'round-trips/yr', chg: totTrips > 0 ? '+'+fmt(Math.round(totTrips)) : '—', cls:'pos' },
-    { icon:'💨', name:'Hauling GHG', val: fmt(Math.round(totHaulGHG)), unit:'MTCO₂e/yr', chg: totHaulGHG > 0 ? '−'+fmt(Math.round(totHaulGHG)) : '—', cls:'pos' },
-    { icon:'🛣️', name:'New Routes', val: routes, unit:'additional routes', chg: routes > 0 ? '+'+routes+' routes' : 'none', cls: routes > 2 ? 'pos' : 'neg' },
+    { name:'VMT Added', val: fmt(Math.round(totVMT)), unit:'miles/yr', chg: totVMT > 0 ? '+'+fmt(Math.round(totVMT)) : '—', cls: totVMT > 30000 ? 'pos' : 'neg' },
+    { name:'Extra Trips', val: fmt(Math.round(totTrips)), unit:'round-trips/yr', chg: totTrips > 0 ? '+'+fmt(Math.round(totTrips)) : '—', cls:'pos' },
+    { name:'Hauling GHG', val: fmt(Math.round(totHaulGHG)), unit:'MTCO₂e/yr', chg: totHaulGHG > 0 ? '−'+fmt(Math.round(totHaulGHG)) : '—', cls:'pos' },
+    { name:'New Routes', val: routes, unit:'additional routes', chg: routes > 0 ? '+'+routes+' routes' : 'none', cls: routes > 2 ? 'pos' : 'neg' },
   ].map(t=>`
     <div class="transport-item">
-      <div class="transport-icon">${t.icon}</div>
       <div class="transport-name">${t.name}</div>
       <div class="transport-val">${t.val}</div>
       <div class="transport-unit">${t.unit}</div>
@@ -1738,7 +1757,7 @@ function updatePriority(active, results) {
       ghg:        r.netGHG > 1000 ? 3 : r.netGHG > 200 ? 2 : 1,
       cost:       r.netCPT < 50 ? 3 : r.netCPT < 100 ? 2 : 1,
       diversion:  r.tons > 500 ? 3 : r.tons > 100 ? 2 : 1,
-      food:       s.food_score,
+      food:       s.food_score >= 4 ? 3 : s.food_score >= 3 ? 2 : 1,
       jobs:       s.jobs >= 5 ? 3 : s.jobs >= 3 ? 2 : 1,
       resilience: s.resilience >= 4 ? 3 : s.resilience >= 3 ? 2 : 1,
     };
@@ -1746,10 +1765,10 @@ function updatePriority(active, results) {
   }
 
   let html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:9px">';
-  html += '<tr><th style="padding:4px 6px;color:var(--smoke);font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--sand)">Program</th>';
+  html += '<tr><th style="padding:4px 6px;color:var(--smoke);font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--sand);text-align:left">Program</th>';
   criteria.forEach((c,i) => {
-    const active = weights[wkeys[i]];
-    html += `<th style="padding:4px 6px;text-align:center;color:${active?'var(--ink)':'var(--ghost)'};font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--sand)">${c}</th>`;
+    const w = weights[wkeys[i]];
+    html += `<th style="padding:4px 6px;text-align:center;color:var(--ink);font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--sand)">${c}<br><span style="font-size:9px;color:var(--ghost);font-weight:400;letter-spacing:0">×${w}</span></th>`;
   });
   html += '<th style="padding:4px 6px;text-align:center;color:var(--ink);font-weight:700;border-bottom:1px solid var(--sand)">Score</th></tr>';
 
