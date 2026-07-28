@@ -349,11 +349,29 @@ input[type=range]::-webkit-slider-runnable-track {
 /* KPI strip */
 .kpi-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0;
   border-bottom: 1px solid var(--sand);
   background: var(--cream);
 }
+.kpi-split {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 9px;
+  font-family: 'DM Mono', monospace;
+  color: var(--smoke);
+  flex-wrap: wrap;
+}
+.kpi-split-item {
+  padding: 2px 6px;
+  background: var(--sand);
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+.kpi-split-lf { border-left: 2px solid var(--pine); }
+.kpi-split-tx { border-left: 2px solid var(--ember); }
 .kpi-card.baseline {
   background: rgba(196, 98, 45, 0.08);
 }
@@ -969,6 +987,10 @@ input[type=range]::-webkit-slider-runnable-track {
       <div class="kpi-label">Baseline Emissions</div>
       <div class="kpi-value" id="kpi-baseline">0</div>
       <div class="kpi-unit">MTCO₂e / year (before scenarios)</div>
+      <div class="kpi-split">
+        <span class="kpi-split-item kpi-split-lf" id="kpi-baseline-lf">LF: —</span>
+        <span class="kpi-split-item kpi-split-tx" id="kpi-baseline-tx">Trans: —</span>
+      </div>
       <div class="kpi-delta delta-neutral" id="kpi-baseline-delta">responds to LFG slider</div>
     </div>
     <div class="kpi-card">
@@ -987,6 +1009,10 @@ input[type=range]::-webkit-slider-runnable-track {
       <div class="kpi-label">Net GHG Reduction</div>
       <div class="kpi-value" id="kpi-ghg">0</div>
       <div class="kpi-unit">MTCO₂e / year</div>
+      <div class="kpi-split">
+        <span class="kpi-split-item kpi-split-lf" id="kpi-ghg-lf">LF avoided: —</span>
+        <span class="kpi-split-item kpi-split-tx" id="kpi-ghg-tx">Trans added: —</span>
+      </div>
       <div class="kpi-delta delta-neutral" id="kpi-ghg-delta">+hauling offset</div>
     </div>
     <div class="kpi-card">
@@ -1012,6 +1038,12 @@ input[type=range]::-webkit-slider-runnable-track {
       <div class="kpi-value" id="kpi-percapita">$0</div>
       <div class="kpi-unit">net cost per resident / year</div>
       <div class="kpi-delta delta-neutral" id="kpi-percapita-delta">county pop</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Disposal per Capita</div>
+      <div class="kpi-value" id="kpi-lbppd">0</div>
+      <div class="kpi-unit">lbs / person / day (CalRecycle metric)</div>
+      <div class="kpi-delta delta-neutral" id="kpi-lbppd-delta">baseline</div>
     </div>
   </div>
 
@@ -1199,6 +1231,7 @@ const COUNTY_DATA = {
     baselineDiversionRate: 0.083,
     defaultLfgCapture: 40,     // National Avg
     lfgSensitivity: 50,         // MTCO2e per 1% capture change
+    haulDistanceOneWay: 120,   // mi, DNCTS to Dry Creek Landfill (OR)
   },
   tuolumne: {
     name: 'Tuolumne County',
@@ -1216,6 +1249,10 @@ const COUNTY_DATA = {
     landfillDestination: 'Merced County Highway 59 Landfill (RD11086), 94% of tonnage',
     haulDistanceOneWay: 90,     // mi, Sonora to Merced approximate
     documentedDiversion: 22,    // tons/yr community green waste events pilot (Debbie Reagan 2025)
+    // Debbie Reagan 2026-07-24: TC is NOT shipping bulk wood waste out of county.
+    // Current WARM baseline uses statewide rural material composition and may over-credit
+    // wood carbon storage. Pending internal TC data on wood stream routing.
+    woodWasteCaveat: 'baseline may over-credit wood carbon storage; pending TC internal data',
   },
   amador: {
     name: 'Amador County',
@@ -1402,12 +1439,22 @@ function recalc() {
     }
   }
 
+  // Baseline LF vs Transport split (Tedd, 2026-07-24)
+  const baselineTransport = (county.totalDisposed / TRUCK_PAYLOAD) * 2 * (county.haulDistanceOneWay || 0) * TRUCK_EF;
+  const baselineLF = adjustedBaseline - baselineTransport;
+  const bLfEl = document.getElementById('kpi-baseline-lf');
+  const bTxEl = document.getElementById('kpi-baseline-tx');
+  if (bLfEl) bLfEl.textContent = 'LF: ' + (baselineLF >= 0 ? '+' : '') + fmt(Math.round(baselineLF));
+  if (bTxEl) bTxEl.textContent = 'Trans: +' + fmt(Math.round(baselineTransport));
+
   const active = SCENARIOS.filter(s => s.active);
   const results = active.map(s => ({ s, r: calcScenario(s, county, params) }));
 
   // Aggregate KPIs
   let totalTons = results.reduce((a,x) => a + x.r.tons, 0);
   let totalGHG  = results.reduce((a,x) => a + x.r.netGHG, 0);
+  let totalLFAvoided = results.reduce((a,x) => a + x.r.diversionGHG, 0);
+  let totalHaulAdded = results.reduce((a,x) => a + x.r.haulGHG, 0);
   let totalCost = results.reduce((a,x) => a + x.r.opCost, 0);
   let totalNetCost = results.reduce((a,x) => a + x.r.netOpCost, 0);
   let totalVMT  = results.reduce((a,x) => a + x.r.vmtAdded, 0);
@@ -1418,6 +1465,30 @@ function recalc() {
   // Update per capita KPI
   const pcEl = document.getElementById('kpi-percapita');
   if (pcEl) pcEl.textContent = fmtK(perCapita);
+
+  // Disposal per capita (lbs/person/day). CalRecycle facility metric (Debbie, 2026-07-24)
+  const remainingDisposed = Math.max(0, county.totalDisposed - totalTons);
+  const lbppd = (remainingDisposed * 2000) / (county.population * 365);
+  const baselineLbppd = (county.totalDisposed * 2000) / (county.population * 365);
+  const lbppdEl = document.getElementById('kpi-lbppd');
+  if (lbppdEl) lbppdEl.textContent = lbppd.toFixed(2);
+  const lbppdDelta = document.getElementById('kpi-lbppd-delta');
+  if (lbppdDelta) {
+    if (totalTons > 0) {
+      const drop = baselineLbppd - lbppd;
+      lbppdDelta.textContent = '↓' + drop.toFixed(2) + ' vs base';
+      lbppdDelta.className = 'kpi-delta delta-good';
+    } else {
+      lbppdDelta.textContent = 'baseline';
+      lbppdDelta.className = 'kpi-delta delta-neutral';
+    }
+  }
+
+  // Net GHG LF vs Transport split (Tedd, 2026-07-24)
+  const ghgLfEl = document.getElementById('kpi-ghg-lf');
+  const ghgTxEl = document.getElementById('kpi-ghg-tx');
+  if (ghgLfEl) ghgLfEl.textContent = 'LF avoided: ' + (totalLFAvoided > 0 ? '+' : '') + fmt(Math.round(totalLFAvoided));
+  if (ghgTxEl) ghgTxEl.textContent = 'Trans added: −' + fmt(Math.round(totalHaulAdded));
 
   updateKPIs(totalTons, landfillPct, totalGHG, totalCost, netCPT, totalVMT, county);
   updateTable(results, county, params);
