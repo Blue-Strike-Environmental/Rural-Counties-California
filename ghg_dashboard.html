@@ -1227,7 +1227,7 @@ input[type=range]::-webkit-slider-runnable-track {
     </div>
 
     <div class="footnote card-full">
-      <strong>Methodology notes:</strong> All values are planning-level estimates derived from CalRecycle RDRS data (2021–2025), EPA WARM v16 emission factors, CARB EMFAC 2021 truck emission rates (0.00116 MTCO₂e/mile), and CalRecycle/ReFED program cost benchmarks. GHG reductions shown are net of additional hauling emissions. Food waste estimated at 17% of solid waste disposed (CalRecycle 2021 rural characterization). Green waste tonnage from RDRS codes BRUSH/GRASS/WOOD/STUMP/TREE. Replace all italicized estimates with county-specific data when available. SB 1383 compliance assessment is illustrative only. This tool does not constitute regulatory advice. · Blue Strike Environmental · Rural Counties GHG Calculator Tool · 2026
+      <strong>Methodology notes:</strong> All values are planning-level estimates derived from CalRecycle RDRS data (2020&ndash;2025), EPA WARM v16 emission factors, CARB EMFAC 2021 truck emission rates (0.00116 MTCO&#8322;e/mile), a 22-ton transfer trailer payload assumption (WARM v16 default; confirmed with Recology Del Norte), and CalRecycle/ReFED/CARB CERF/BioCycle program cost benchmarks. GHG reductions shown are net of additional hauling emissions. Food waste estimated at 17% of solid waste disposed, based on CalRecycle 2018 Facility-Based Characterization of Solid Waste in California, DRRR-2020-1666 (May 2020); food-soiled paper is excluded. Green waste tonnage aggregated from RDRS Material Types "Branches and Stumps," "Leaves and Grass," "Pruning and Trimmings," "Wood," and "Wood Chips" (CalRecycle RDRS Material Type List, October 2019). County populations from California Department of Finance E-1 estimates as of January 1, 2025. Replace all italicized estimates with county-specific data when available. SB 1383 compliance assessment is illustrative only. This tool does not constitute regulatory advice. &middot; Blue Strike Environmental &middot; Rural Counties GHG Calculator Tool &middot; 2026
     </div>
 
   </div>
@@ -1246,7 +1246,7 @@ const COUNTY_DATA = {
     recyclables: 397,
     foodWasteFraction: 0.17,
     greenWasteFraction: 0.12,
-    baselineGHG: 1788,        // MTCO2e/yr, WARM v16 with 120mi transport (updated 2026-07-16)
+    baselineGHG: 961,         // MTCO2e/yr, WARM v16 with 120mi transport at 22-ton payload (updated 2026-08-05)
     baselineDiversionRate: 0.083,
     defaultLfgCapture: 40,     // National Avg
     lfgSensitivity: 50,         // MTCO2e per 1% capture change
@@ -1260,7 +1260,7 @@ const COUNTY_DATA = {
     recyclables: 720,
     foodWasteFraction: 0.17,
     greenWasteFraction: 0.13,
-    baselineGHG: -9880,          // MTCO2e/yr, WARM v16 with 90 mi transport (updated 2026-07-23)
+    baselineGHG: -11148,         // MTCO2e/yr, WARM v16 with 90 mi transport at 22-ton payload (updated 2026-08-05)
     baselineDiversionRate: 0.095,
     defaultLfgCapture: 85,     // CA regulatory
     lfgSensitivity: 200,
@@ -1281,7 +1281,7 @@ const COUNTY_DATA = {
     recyclables: 1118,           // 2024 RDRS all recycling streams combined
     foodWasteFraction: 0.17,
     greenWasteFraction: 0.12,
-    baselineGHG: -5121,          // MTCO2e/yr, WARM v16 Tier 1 with RDRS diversion (updated 2026-08-04)
+    baselineGHG: -5641,          // MTCO2e/yr, WARM v16 Tier 1 with RDRS diversion + 22-ton payload (updated 2026-08-05)
     baselineDiversionRate: 0.124,
     defaultLfgCapture: 85,
     lfgSensitivity: 60,
@@ -1302,11 +1302,11 @@ function getAdjustedBaseline(county, lfgCaptureRate) {
 const SCENARIOS = [
   { id: 'food_rescue',    name: 'Food Rescue Expansion',    color: '#4a8c5c', active: false,
     diversionFn: (d,p,cap) => d.totalDisposed * d.foodWasteFraction * 0.3 * (p/100),
-    ghgEF: 0.69, haulMult: 0.3, capCost: 35000,  opCostBase: 45000,  opCostPerTon: 35,
-    infra: 'Storage hubs', vmt_mult: 0.3, jobs: 2, resilience: 4, food_score: 5, food_divert: 4 },
+    ghgEF: 0.69, haulMult: 1.2, capCost: 100000, opCostBase: 65000,  opCostPerTon: 200,
+    infra: 'Storage hubs', vmt_mult: 1.2, jobs: 2, resilience: 4, food_score: 5, food_divert: 4 },
   { id: 'yard_mulch',     name: 'Yard Waste Mulch',         color: '#7ec8a0', active: false,
     diversionFn: (d,p,cap) => d.greenWaste * (cap/100) * (p/100),
-    ghgEF: 0.32, haulMult: 1.0, capCost: 120000, opCostBase: 80000,  opCostPerTon: 50,
+    ghgEF: 0.22, haulMult: 1.0, capCost: 120000, opCostBase: 80000,  opCostPerTon: 50,
     infra: 'Chipping/mulch site', vmt_mult: 1.0, jobs: 3, resilience: 3, food_score: 1, food_divert: 2 },
   { id: 'windrow',        name: 'Windrow Compost Facility', color: '#2d5a3d', active: false,
     diversionFn: (d,p,cap) => (d.totalDisposed * d.foodWasteFraction + d.greenWaste) * 0.6 * (p/100) * (cap/100),
@@ -1318,7 +1318,7 @@ const SCENARIOS = [
     infra: 'Regional digester (long-haul)', vmt_mult: 3.0, jobs: 12, resilience: 4, food_score: 4, food_divert: 5 },
   { id: 'backyard',       name: 'Backyard Composting',      color: '#d4a843', active: false,
     diversionFn: (d,p,cap) => d.population * 0.003 * (p/100),
-    ghgEF: 0.39, haulMult: 0.0, capCost: 60000,  opCostBase: 25000,  opCostPerTon: 28,
+    ghgEF: 0.39, haulMult: 0.0, capCost: 60000,  opCostBase: 12000,  opCostPerTon: 28,
     infra: 'Household bins (no routes)', vmt_mult: 0.0, jobs: 1, resilience: 5, food_score: 2, food_divert: 2 },
   { id: 'community',      name: 'Community Garden Compost', color: '#c4622d', active: false,
     diversionFn: (d,p,cap) => d.population * 0.0015 * (p/100),
@@ -1326,7 +1326,7 @@ const SCENARIOS = [
     infra: 'Local community sites', vmt_mult: 0.2, jobs: 2, resilience: 4, food_score: 3, food_divert: 3 },
   { id: 'biochar',        name: 'Biochar / Soil Amendment', color: '#3a6b8a', active: false,
     diversionFn: (d,p,cap) => d.greenWaste * 0.4 * (p/100),
-    ghgEF: 3.5,  haulMult: 0.8, capCost: 800000, opCostBase: 180000, opCostPerTon: 90,
+    ghgEF: 1.5,  haulMult: 0.8, capCost: 800000, opCostBase: 180000, opCostPerTon: 90,
     infra: 'Local biochar processing', vmt_mult: 0.8, jobs: 4, resilience: 3, food_score: 1, food_divert: 3 },
   { id: 'forestry',       name: 'Forestry + Organics Co-Compost', color: '#6b4f35', active: false,
     diversionFn: (d,p,cap) => d.greenWaste * 0.5 * (p/100),
@@ -1339,7 +1339,7 @@ const SCENARIOS = [
 ];
 
 const TRUCK_EF = 0.00116; // MTCO2e/mile (CARB EMFAC 2021)
-const TRUCK_PAYLOAD = 6.0; // tons/load
+const TRUCK_PAYLOAD = 22.0; // tons/load, transfer trailer (WARM v16 default; Recology Del Norte confirmed 22 tons)
 
 // Weights: 1 to 10, default 5 (Figma prioritization sliders)
 let weights = { ghg:5, cost:5, diversion:5, food:5, jobs:5, resilience:5 };
