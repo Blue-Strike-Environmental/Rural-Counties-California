@@ -1314,7 +1314,7 @@ const SCENARIOS = [
     infra: 'Compost facility + route', vmt_mult: 1.5, jobs: 8, resilience: 5, food_score: 3, food_divert: 5 },
   { id: 'anaerobic',      name: 'Anaerobic Digestion',      color: '#1a3a2a', active: false,
     diversionFn: (d,p,cap) => d.totalDisposed * (d.foodWasteFraction + 0.05) * 0.7 * (p/100),
-    ghgEF: 0.85, haulMult: 3.0, capCost: 8000000, opCostBase: 500000, opCostPerTon: 110,
+    ghgEF: 0.55, haulMult: 3.0, capCost: 8000000, opCostBase: 500000, opCostPerTon: 60,
     infra: 'Regional digester (long-haul)', vmt_mult: 3.0, jobs: 12, resilience: 4, food_score: 4, food_divert: 5 },
   { id: 'backyard',       name: 'Backyard Composting',      color: '#d4a843', active: false,
     diversionFn: (d,p,cap) => d.population * 0.003 * (p/100),
