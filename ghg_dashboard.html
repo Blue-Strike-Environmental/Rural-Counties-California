@@ -121,6 +121,7 @@ body {
 }
 .sidebar-section:nth-child(3n) { border-right: none; }
 .sidebar-section:nth-child(n+4) { border-bottom: none; }
+.sidebar-section:last-child { border-right: none; }
 .section-label {
   font-size: 9px;
   font-weight: 600;
@@ -322,6 +323,20 @@ input[type=range]::-webkit-slider-runnable-track {
   background: linear-gradient(90deg, var(--gold), var(--ember));
   transition: width 0.4s ease;
 }
+
+/* Target bars re-styled for use inside the light SB 1383 card */
+.sb-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.sb-targets .target-bar {
+  background: rgba(0,0,0,0.03);
+  border: 1px solid var(--sand);
+}
+.sb-targets .target-label { color: var(--smoke); }
+.sb-targets .target-progress { background: rgba(0,0,0,0.08); }
 
 /* ── MAIN CONTENT ── */
 .main {
@@ -1016,25 +1031,6 @@ input[type=range]::-webkit-slider-runnable-track {
     </div>
   </div>
 
-  <div class="sidebar-section">
-    <div class="section-label">SB 1383 Targets</div>
-    <div class="target-bar">
-      <div class="target-row">
-        <span class="target-label">Organic waste reduction vs 2014</span>
-        <span class="target-val">75% by 2025</span>
-      </div>
-      <div class="target-progress"><div class="target-fill" id="sb-progress-1" style="width:11%"></div></div>
-    </div>
-    <div style="height:6px"></div>
-    <div class="target-bar">
-      <div class="target-row">
-        <span class="target-label">Edible food recovery</span>
-        <span class="target-val">20% by 2025</span>
-      </div>
-      <div class="target-progress"><div class="target-fill" id="sb-progress-2" style="width:5%"></div></div>
-    </div>
-  </div>
-
 </aside>
 
 <!-- ── MAIN ── -->
@@ -1136,10 +1132,26 @@ input[type=range]::-webkit-slider-runnable-track {
       <div class="card-header">
         <div>
           <div class="card-title">SB 1383 Compliance Tracker</div>
-          <div class="card-subtitle">Estimated compliance gap vs. selected programs</div>
+          <div class="card-subtitle">Statewide targets and estimated compliance gap</div>
         </div>
       </div>
       <div class="card-body">
+        <div class="sb-targets">
+          <div class="target-bar">
+            <div class="target-row">
+              <span class="target-label">Organic waste reduction vs 2014</span>
+              <span class="target-val">75% by 2025</span>
+            </div>
+            <div class="target-progress"><div class="target-fill" id="sb-progress-1" style="width:11%"></div></div>
+          </div>
+          <div class="target-bar">
+            <div class="target-row">
+              <span class="target-label">Edible food recovery</span>
+              <span class="target-val">20% by 2025</span>
+            </div>
+            <div class="target-progress"><div class="target-fill" id="sb-progress-2" style="width:5%"></div></div>
+          </div>
+        </div>
         <div class="sb-grid" id="sb-grid"></div>
       </div>
     </div>
