@@ -102,26 +102,23 @@ body {
 
 /* ── LAYOUT ── */
 .app {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: calc(100vh - 58px);
+  overflow: hidden;
 }
 
-/* ── SIDEBAR (horizontal top bar, 3 columns x 2 rows) ── */
+/* ── SIDEBAR ── */
 .sidebar {
   background: var(--forest);
-  padding: 0;
-  border-bottom: 1px solid var(--pine);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  border-right: 1px solid var(--pine);
+  overflow-y: auto;
 }
 .sidebar-section {
-  padding: 8px 14px;
-  border-right: 1px solid rgba(255,255,255,0.07);
+  padding: 8px 14px 6px;
   border-bottom: 1px solid rgba(255,255,255,0.07);
 }
-.sidebar-section:nth-child(3n) { border-right: none; }
-.sidebar-section:nth-child(n+4) { border-bottom: none; }
-.sidebar-section:last-child { border-right: none; }
+.sidebar-section:last-child { border-bottom: none; }
 .section-label {
   font-size: 9px;
   font-weight: 600;
@@ -344,6 +341,7 @@ input[type=range]::-webkit-slider-runnable-track {
   flex-direction: column;
   overflow-y: auto;
   background: #f0ebe0;
+  min-height: 0;
 }
 
 /* KPI strip */
