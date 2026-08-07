@@ -104,6 +104,9 @@ body {
 .app {
   display: grid;
   grid-template-columns: 280px 1fr;
+  align-items: stretch;
+}
+.main {
   min-height: calc(100vh - 58px);
 }
 
@@ -115,7 +118,7 @@ body {
   border-right: 1px solid var(--pine);
 }
 .sidebar-section {
-  padding: 18px 20px 12px;
+  padding: 10px 16px 8px;
   border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 .sidebar-section:last-child { border-bottom: none; }
@@ -125,7 +128,7 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--mint);
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -369,7 +372,7 @@ input[type=range]::-webkit-slider-runnable-track {
   line-height: 1.4;
 }
 .kpi-card {
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-right: 1px solid var(--sand);
   position: relative;
   transition: background 0.15s;
@@ -472,7 +475,7 @@ input[type=range]::-webkit-slider-runnable-track {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-bottom: 1px solid var(--sand);
   background: white;
 }
@@ -489,16 +492,16 @@ input[type=range]::-webkit-slider-runnable-track {
   margin-top: 1px;
 }
 .card-body {
-  padding: 10px 12px;
+  padding: 8px 10px;
   position: relative;
 }
 .chart-wrap {
   position: relative;
-  height: 170px;
+  height: 150px;
 }
 .chart-wrap-tall {
   position: relative;
-  height: 210px;
+  height: 180px;
 }
 
 /* Scenario comparison table */
@@ -676,7 +679,7 @@ input[type=range]::-webkit-slider-runnable-track {
 /* Footer note */
 .footnote {
   grid-column: 1 / -1;
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: rgba(0,0,0,0.03);
   border: 1px solid var(--sand);
   border-radius: var(--rad);
