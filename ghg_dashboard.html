@@ -418,10 +418,11 @@ input[type=range]::-webkit-slider-runnable-track {
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 10px;
-  padding: 10px 14px;
+  grid-auto-rows: min-content;
+  gap: 6px;
+  padding: 6px 12px 10px;
   flex: 1;
+  align-items: start;
 }
 
 /* Cards */
@@ -436,6 +437,7 @@ input[type=range]::-webkit-slider-runnable-track {
 /* Top-level tabs */
 .view-tabs {
   display: flex;
+  justify-content: center;
   gap: 4px;
   padding: 4px 14px 0;
   border-bottom: 1px solid var(--sand);
