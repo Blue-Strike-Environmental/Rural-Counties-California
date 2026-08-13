@@ -1284,22 +1284,21 @@ const COUNTY_DATA = {
   tuolumne: {
     name: 'Tuolumne County',
     population: 55000,
-    totalDisposed: 50101,
-    greenWaste: 2800,
-    recyclables: 720,
+    totalDisposed: 48200,        // Cal Sierra Transfer 2024 (Q1 estimated); Big Oak Flat direct not included
+    greenWaste: 0,               // Cal Sierra RDRS confirms 0 green material for beneficial reuse (SB 1383 rural exemption)
+    recyclables: 3991,           // 2024 Cal Sierra: 3,523 Mixed Recyclables + 468 Mixed Metals
     foodWasteFraction: 0.17,
     greenWasteFraction: 0.13,
-    baselineGHG: -11148,         // MTCO2e/yr, WARM v16 with 90 mi transport at 22-ton payload (updated 2026-08-05)
-    baselineDiversionRate: 0.095,
+    baselineGHG: -19850,         // MTCO2e/yr, WARM v16 Tier 1 upgrade from Cal Sierra RDRS (updated 2026-08-13)
+    baselineDiversionRate: 0.076,
     defaultLfgCapture: 85,     // CA regulatory
     lfgSensitivity: 200,
     // Confirmed by Larry Sweetser 2026-07-21
     landfillDestination: 'Merced County Highway 59 Landfill (RD11086), 94% of tonnage',
     haulDistanceOneWay: 90,     // mi, Sonora to Merced approximate
-    documentedDiversion: 22,    // tons/yr community green waste events pilot (Debbie Reagan 2025)
+    documentedDiversion: 3991,  // tons/yr (Cal Sierra RDRS 2024: recycling + metals)
     // Debbie Reagan 2026-07-24: TC is NOT shipping bulk wood waste out of county.
-    // Current WARM baseline uses statewide rural material composition and may over-credit
-    // wood carbon storage. Pending internal TC data on wood stream routing.
+    // Composition split for landfilled portion still uses statewide averages.
     woodWasteCaveat: 'baseline may over-credit wood carbon storage; pending TC internal data',
   },
   amador: {
@@ -1310,7 +1309,7 @@ const COUNTY_DATA = {
     recyclables: 1118,           // 2024 RDRS all recycling streams combined
     foodWasteFraction: 0.17,
     greenWasteFraction: 0.12,
-    baselineGHG: -5641,          // MTCO2e/yr, WARM v16 Tier 1 with RDRS diversion + 22-ton payload (updated 2026-08-05)
+    baselineGHG: -5785,          // MTCO2e/yr, WARM v16 Tier 1 + 209t SB 1383 food donations (Debbie B-R 8/12; updated 2026-08-13)
     baselineDiversionRate: 0.124,
     defaultLfgCapture: 85,
     lfgSensitivity: 60,

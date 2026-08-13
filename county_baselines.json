@@ -1,9 +1,9 @@
 {
   "_metadata": {
     "schema_version": 1,
-    "last_updated": "2026-08-05",
+    "last_updated": "2026-08-13",
     "last_updated_by": "Brittany Mahoney (BSE)",
-    "notes": "Edit values below and commit to GitHub to update the live dashboard. Do not delete _metadata block. Do not delete keys. Numeric fields must remain numeric (no quotes). 2026-08-05 update: transport corrected across all 3 counties after TRUCK_PAYLOAD bug fix (was 6 tons, now 22). Amador retained Tier 1 RDRS from prior day."
+    "notes": "Edit values below and commit to GitHub to update the live dashboard. Do not delete _metadata block. Do not delete keys. Numeric fields must remain numeric (no quotes). 2026-08-13: Amador +209 tons SB 1383 food donations (Debbie B-R email 8/12); Tuolumne Tier 1 upgrade pending Cal Sierra quarterlies."
   },
   "del_norte": {
     "name": "Del Norte County",
@@ -26,21 +26,22 @@
   "tuolumne": {
     "name": "Tuolumne County",
     "population": 55000,
-    "totalDisposed": 50101,
-    "greenWaste": 2800,
-    "recyclables": 720,
+    "totalDisposed": 48200,
+    "greenWaste": 0,
+    "recyclables": 3991,
     "foodWasteFraction": 0.17,
     "greenWasteFraction": 0.13,
-    "baselineGHG": -11148,
-    "baselineDiversionRate": 0.095,
+    "baselineGHG": -19850,
+    "baselineDiversionRate": 0.076,
     "defaultLfgCapture": 85,
     "lfgSensitivity": 200,
     "landfillDestination": "Merced County Highway 59 Landfill (RD11086), 94% of tonnage",
     "landfillState": "California",
     "haulDistanceOneWay": 90,
-    "documentedDiversion": 22,
-    "dataSource": "CalRecycle quarterly 2020-2025; composition from CalRecycle 2021 statewide factors",
-    "dataTier": 3,
+    "documentedDiversion": 3991,
+    "dataSource": "RDRS 2024 quarterly, Cal Sierra Transfer Station (RD10193); Q1 2024 estimated from Q2-Q4 average; composition split for landfilled portion from CalRecycle 2018 field data (DRRR-2020-1666); Big Oak Flat (Groveland) direct disposal not included in this total",
+    "dataTier": 1,
+    "greenWasteNote": "Cal Sierra reports zero green material for beneficial reuse under SB 1383 rural exemption; source-separated organics collected but sent to disposal via consolidation waiver",
     "woodWasteCaveat": "baseline may over-credit wood carbon storage; pending TC internal data (Debbie Reagan 2026-07-24)"
   },
   "amador": {
@@ -49,17 +50,18 @@
     "totalDisposed": 33607,
     "greenWaste": 3629,
     "recyclables": 1118,
+    "foodDonations": 209,
     "foodWasteFraction": 0.17,
     "greenWasteFraction": 0.12,
-    "baselineGHG": -5641,
-    "baselineDiversionRate": 0.124,
+    "baselineGHG": -5785,
+    "baselineDiversionRate": 0.130,
     "defaultLfgCapture": 85,
     "lfgSensitivity": 60,
     "landfillDestination": "Forward Landfill (RD11122) primary since 2024, Kiefer Landfill (RD10436) primary 2020-2023",
     "landfillState": "California",
     "haulDistanceOneWay": 55,
-    "documentedDiversion": 4747,
-    "dataSource": "RDRS 2024 monthly, Pine Grove Transfer Station + Ione Transfer Station combined; composition split for landfilled portion from CalRecycle 2021 statewide factors",
+    "documentedDiversion": 4956,
+    "dataSource": "RDRS 2024 monthly (Pine Grove + Ione Transfer Stations) plus 2024 EAR SB 1383 edible food recovery (209 tons via Debbie B-R 2026-08-12); composition split for landfilled portion from CalRecycle 2018 field data (DRRR-2020-1666)",
     "dataTier": 1
   }
 }
