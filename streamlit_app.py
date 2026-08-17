@@ -21,4 +21,4 @@ st.markdown("""
 
 html_path = Path(__file__).parent / "ghg_dashboard.html"
 html_content = html_path.read_text()
-components.html(html_content, height=3400, scrolling=True)
+components.html(html_content, height=900, scrolling=True)
